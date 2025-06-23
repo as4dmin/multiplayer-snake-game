@@ -1,0 +1,246 @@
+import pygame
+import random
+import sys
+
+pygame.init()
+
+# Screen setup
+width, height = 600, 400
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption('Multiplayer Snake Game')
+
+clock = pygame.time.Clock()
+snake_block = 10
+
+# Colors
+white = (255, 255, 255)
+green = (0, 255, 0)
+black = (0, 0, 0)
+red = (255, 0, 0)
+yellow = (255, 255, 0)
+
+# Fonts
+font = pygame.font.SysFont("consolas", 24)
+big_font = pygame.font.SysFont("consolas", 40)
+
+
+def draw_gradient_background():
+    for y in range(height):
+        color = (
+            int(20 + y * 0.15),
+            int(20 + y * 0.25),
+            int(30 + y * 0.3)
+        )
+        pygame.draw.line(screen, color, (0, y), (width, y))
+
+
+def draw_snake(snake_list, color):
+    for block in snake_list:
+        pygame.draw.rect(screen, color, [block[0], block[1], snake_block, snake_block], border_radius=4)
+
+
+def draw_circle_food(x, y, color):
+    center = (int(x + snake_block / 2), int(y + snake_block / 2))
+    pygame.draw.circle(screen, color, center, snake_block // 2)
+
+
+def get_player_names():
+    input_box1 = pygame.Rect(200, 100, 200, 40)
+    input_box2 = pygame.Rect(200, 180, 200, 40)
+    color_inactive = pygame.Color('lightskyblue3')
+    color_active = pygame.Color('dodgerblue2')
+    active1 = False
+    active2 = False
+    text1 = ''
+    text2 = ''
+    done = False
+
+    while not done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if input_box1.collidepoint(event.pos):
+                    active1 = True
+                    active2 = False
+                elif input_box2.collidepoint(event.pos):
+                    active2 = True
+                    active1 = False
+                else:
+                    active1 = False
+                    active2 = False
+            if event.type == pygame.KEYDOWN:
+                if active1:
+                    if event.key == pygame.K_RETURN:
+                        active1 = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        text1 = text1[:-1]
+                    else:
+                        text1 += event.unicode
+                elif active2:
+                    if event.key == pygame.K_RETURN:
+                        active2 = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        text2 = text2[:-1]
+                    else:
+                        text2 += event.unicode
+                if event.key == pygame.K_RETURN and text1 and text2:
+                    done = True
+
+        draw_gradient_background()
+        title = big_font.render("Enter Player Names", True, yellow)
+        screen.blit(title, (width // 2 - title.get_width() // 2, 30))
+
+        pygame.draw.rect(screen, color_active if active1 else color_inactive, input_box1, 2)
+        pygame.draw.rect(screen, color_active if active2 else color_inactive, input_box2, 2)
+
+        txt_surface1 = font.render(text1 or "Player 1", True, white)
+        txt_surface2 = font.render(text2 or "Player 2", True, white)
+        screen.blit(txt_surface1, (input_box1.x + 5, input_box1.y + 5))
+        screen.blit(txt_surface2, (input_box2.x + 5, input_box2.y + 5))
+
+        pygame.display.flip()
+        clock.tick(30)
+
+    return text1, text2
+
+
+def gameLoop(player1_name, player2_name):
+    while True:
+        x1, y1 = 100, 100
+        dx1, dy1 = snake_block, 0
+        direction1 = "RIGHT"
+        snake1 = []
+        length1 = 1
+
+        x2, y2 = 500, 300
+        dx2, dy2 = -snake_block, 0
+        direction2 = "LEFT"
+        snake2 = []
+        length2 = 1
+
+        foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
+        foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+
+        speed = 10
+        game_over = False
+
+        while not game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    # Player 1
+                    if event.key == pygame.K_w and direction1 != "DOWN":
+                        dx1, dy1 = 0, -snake_block
+                        direction1 = "UP"
+                    elif event.key == pygame.K_s and direction1 != "UP":
+                        dx1, dy1 = 0, snake_block
+                        direction1 = "DOWN"
+                    elif event.key == pygame.K_a and direction1 != "RIGHT":
+                        dx1, dy1 = -snake_block, 0
+                        direction1 = "LEFT"
+                    elif event.key == pygame.K_d and direction1 != "LEFT":
+                        dx1, dy1 = snake_block, 0
+                        direction1 = "RIGHT"
+                    # Player 2
+                    elif event.key == pygame.K_UP and direction2 != "DOWN":
+                        dx2, dy2 = 0, -snake_block
+                        direction2 = "UP"
+                    elif event.key == pygame.K_DOWN and direction2 != "UP":
+                        dx2, dy2 = 0, snake_block
+                        direction2 = "DOWN"
+                    elif event.key == pygame.K_LEFT and direction2 != "RIGHT":
+                        dx2, dy2 = -snake_block, 0
+                        direction2 = "LEFT"
+                    elif event.key == pygame.K_RIGHT and direction2 != "LEFT":
+                        dx2, dy2 = snake_block, 0
+                        direction2 = "RIGHT"
+
+            x1 += dx1
+            y1 += dy1
+            x2 += dx2
+            y2 += dy2
+
+            if x1 < 0 or x1 >= width or y1 < 0 or y1 >= height:
+                game_over = True
+            if x2 < 0 or x2 >= width or y2 < 0 or y2 >= height:
+                game_over = True
+
+            draw_gradient_background()
+
+            draw_circle_food(foodx, foody, red)
+
+            head1 = [x1, y1]
+            snake1.append(head1)
+            if len(snake1) > length1:
+                del snake1[0]
+
+            head2 = [x2, y2]
+            snake2.append(head2)
+            if len(snake2) > length2:
+                del snake2[0]
+
+            if head1 in snake1[:-1] or head1 in snake2:
+                game_over = True
+            if head2 in snake2[:-1] or head2 in snake1:
+                game_over = True
+
+            if x1 == foodx and y1 == foody:
+                length1 += 1
+                foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
+                foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+                speed = min(30, speed + 0.5)
+
+            if x2 == foodx and y2 == foody:
+                length2 += 1
+                foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
+                foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+                speed = min(30, speed + 0.5)
+
+            draw_snake(snake1, white)
+            draw_snake(snake2, green)
+
+            p1_text = font.render(f'{player1_name}: {length1 - 1}', True, white)
+            p2_text = font.render(f'{player2_name}: {length2 - 1}', True, green)
+            screen.blit(p1_text, (10, 5))
+            screen.blit(p2_text, (width - p2_text.get_width() - 10, 5))
+
+            pygame.display.update()
+            clock.tick(speed)
+
+        # Determine winner
+        if (length1 - 1) > (length2 - 1):
+            final_result = f"Winner: {player1_name}"
+        elif (length2 - 1) > (length1 - 1):
+            final_result = f"Winner: {player2_name}"
+        else:
+            final_result = "It's a Draw!"
+
+        # Show Game Over screen
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        waiting = False
+                    elif event.key == pygame.K_q:
+                        pygame.quit()
+                        sys.exit()
+
+            draw_gradient_background()
+            winner_text = big_font.render(final_result, True, yellow)
+            screen.blit(winner_text, (width // 2 - winner_text.get_width() // 2, height // 2 - 60))
+            msg = font.render("Press R to Restart or Q to Quit", True, white)
+            screen.blit(msg, (width // 2 - msg.get_width() // 2, height // 2))
+            pygame.display.update()
+
+
+# === Start the Game ===
+player1, player2 = get_player_names()
+gameLoop(player1, player2)
