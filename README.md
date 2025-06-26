@@ -44,7 +44,7 @@ On game over:
    ```bash
    git clone https://github.com/your-username/multiplayer-snake-game.git
    cd multiplayer-snake-game
-````
+   ````
 
 2. **Install dependencies**
    Make sure Python is installed, then:
@@ -107,13 +107,9 @@ MIT License — Feel free to use, modify, and share!
 ### Made with 💻 + 🎮 by \As4dmin
 
 ```
-
----
-
 Let me know if you’d like:
 - A version with emojis removed  
 - A minimalistic version  
 - To include your actual name and GitHub repo link  
 
 I'll customize it further for you!
-```
