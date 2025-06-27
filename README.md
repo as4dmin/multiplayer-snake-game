@@ -59,19 +59,6 @@ On game over:
    python snake_game.py
    ```
 
----
-
-## 🎨 Screenshots
-
-> *(Add screenshots or a GIF here if you'd like)*
-> Example:
-
-* Menu asking for player names
-* In-game play
-* Game over screen with winner
-
----
-
 ## 📚 Tech Stack
 
 * Python 🐍
